@@ -6,6 +6,8 @@ import sys
 import time
 from threading import Thread
 import importlib.util
+import matplotlib.pyplot as plt
+import color
 
 # Import packages for RTC
 import busio
@@ -15,7 +17,7 @@ import board
 # Define VideoStream class to handle streaming of video from webcam in separate processing thread
 # Source - Adrian Rosebrock, PyImageSearch: https://www.pyimagesearch.com/2015/12/28/increasing-raspberry-pi-fps-with-python-and-opencv/
 class VideoStream:
-    """Camera object that controls video streaming from the Picamera"""
+    """Camera object that controls video streaming Sfrom the Picamera"""
     def __init__(self,resolution=(1280,720),framerate=30):
         # Initialize the PiCamera and the camera image stream
         self.stream = cv2.VideoCapture(0)
@@ -155,6 +157,7 @@ while j is 1:
 
     # Grab frame from video stream
     frame1 = cv2.imread(PATH_TO_IMAGE)
+    frame1 = color.WhiteBalance(frame1, 5)
     frame = frame1.copy()
     
     # crop the frame into four parts 
