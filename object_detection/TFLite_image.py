@@ -157,7 +157,7 @@ while j is 1:
 
     # Grab frame from video stream
     frame1 = cv2.imread(PATH_TO_IMAGE)
-    #frame1 = color.WhiteBalance(frame1, 5)
+    frame1 = color.WhiteBalance(frame1, 5)
     frame = frame1.copy()
     imH = frame.shape[0]
     imW = frame.shape[1]
