@@ -159,6 +159,8 @@ while j is 1:
     frame1 = cv2.imread(PATH_TO_IMAGE)
     #frame1 = color.WhiteBalance(frame1, 5)
     frame = frame1.copy()
+    imH = frame.shape[0]
+    imW = frame.shape[1]
     #print(frame.shape)
     #frame[:,:,3] = frame[:,:,3] - 10
     
