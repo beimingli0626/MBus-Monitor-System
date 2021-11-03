@@ -103,7 +103,7 @@ with open(PATH_TO_LABELS, 'r') as f:
     labels = [line.strip() for line in f.readlines()]
 
 # Path to image file
-PATH_TO_IMAGE = '/home/pi/Projects/Python/tflite/object_detection/' + image
+PATH_TO_IMAGE = '/home/pi/Projects/Python/tflite/MBus_monitor/object_detection/' + image
 print(PATH_TO_IMAGE)
 
 # Have to do a weird fix for label map if using the COCO "starter model" from
@@ -157,8 +157,10 @@ while j is 1:
 
     # Grab frame from video stream
     frame1 = cv2.imread(PATH_TO_IMAGE)
-    frame1 = color.WhiteBalance(frame1, 5)
+    #frame1 = color.WhiteBalance(frame1, 5)
     frame = frame1.copy()
+    #print(frame.shape)
+    #frame[:,:,3] = frame[:,:,3] - 10
     
     # crop the frame into four parts 
     frames = [frame[0:int(imH/2),0:int(imW/2)], frame[0:int(imH/2),int(imW/2):imW], frame[int(imH/2):imH,0:int(imW/2)], frame[int(imH/2):imH,int(imW/2):imW]]

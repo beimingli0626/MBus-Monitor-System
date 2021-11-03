@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 
-def WhiteBlance(img, mode):
+def WhiteBalance(img, mode):
     print('Entered func')
     """White balance processing (default is 1 mean, 2 perfect reflection, 3 grayscale world, 4 based image analysis "and color correction, 5 dynamic threshold)"""
     #  Read image
