@@ -9,6 +9,15 @@ import importlib.util
 import matplotlib.pyplot as plt
 import color
 
+# Import packages for oled
+import subprocess
+from board import SCL, SDA
+import busio
+from PIL import Image, ImageDraw, ImageFont
+import adafruit_ssd1306
+import datetime
+
+
 # Import packages for RTC
 #import busio
 #import adafruit_pcf8523
@@ -142,22 +151,60 @@ time.sleep(1)
 #rtc = adafruit_pcf8523.PCF8523(rtcI2C)
 #days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
 
+# use oled display
+# Create the I2C interface.
+i2c = busio.I2C(SCL, SDA)
+
+# Create the SSD1306 OLED class.
+# The first two parameters are the pixel width and pixel height.  Change these
+# to the right size for your display!
+disp = adafruit_ssd1306.SSD1306_I2C(128, 32, i2c)
+
+# Clear display.
+disp.fill(0)
+disp.show()
+
+# Create blank image for drawing.
+# Make sure to create image with mode '1' for 1-bit color.
+width_oled = disp.width
+height_oled = disp.height
+image_oled = Image.new("1", (width, height))
+
+# Get drawing object to draw on image.
+draw = ImageDraw.Draw(image_oled)
+
+# Draw a black filled box to clear the image.
+draw.rectangle((0, 0, width_oled, height_oled), outline=0, fill=0)
+
+# Draw some shapes.
+# First define some constants to allow easy resizing of shapes.
+padding = -2
+top = padding
+bottom = height_oled - padding
+# Move left to right keeping track of the current x position for drawing shapes.
+x = 0
+
+
+# Load default font.
+font = ImageFont.load_default()
+
 # Create window
 #cv2.namedWindow('Crowd Counting', cv2.WINDOW_NORMAL)
-#cv2.namedWindow('00', cv2.WINDOW_NORMAL)
-#cv2.namedWindow('10', cv2.WINDOW_NORMAL)
-#cv2.namedWindow('01', cv2.WINDOW_NORMAL)
-#cv2.namedWindow('11', cv2.WINDOW_NORMAL)
+cv2.namedWindow('00', cv2.WINDOW_NORMAL)
+cv2.namedWindow('10', cv2.WINDOW_NORMAL)
+cv2.namedWindow('01', cv2.WINDOW_NORMAL)
+cv2.namedWindow('11', cv2.WINDOW_NORMAL)
 
 j = 1
-while j is 1:
+while True:
     # i = 0
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
 
     # Grab frame from video stream
-    frame1 = cv2.imread(PATH_TO_IMAGE)
-    frame1 = color.WhiteBalance(frame1, 5)
+    #frame1 = cv2.imread(PATH_TO_IMAGE)
+    frame1 = videostream.read()
+    #frame1 = color.WhiteBalance(frame1, 5)
     frame = frame1.copy()
     imH = frame.shape[0]
     imW = frame.shape[1]
@@ -224,19 +271,40 @@ while j is 1:
         #print("Number of People: %d." % (people_cnt))
 
         # Draw framerate in corner of frame
-        cv2.putText(frames[f_idx],'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
-
+        #cv2.putText(frames[f_idx],'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
+        
+        
         # All the results have been drawn on the frame, so it's time to display it.
         #cv2.imshow('Crowd Counting', frames[f_idx])
         
-        #cv2.imshow('00', frames[0])
-        #cv2.imshow('10', frames[2])
-        #cv2.imshow('01', frames[1])
-        #cv2.imshow('11', frames[3])
+        cv2.imshow('00', frames[0])
+        cv2.imshow('10', frames[2])
+        cv2.imshow('01', frames[1])
+        cv2.imshow('11', frames[3])
 
     # t = rtc.datetime
     # print("Number of People: %d. Photo taken at: %s %d/%d/%d %d:%02d:%02d" % (people_cnt_total, days[t.tm_wday], t.tm_mday, t.tm_mon, t.tm_year, t.tm_hour, t.tm_min, t.tm_sec))
     
+    #oled display
+    draw.rectangle((0, 0, width_oled, height_oled), outline=0, fill=0)
+
+    # Shell scripts for system monitoring from here:
+    # https://unix.stackexchange.com/questions/119126/command-to-display-memory-usage-disk-usage-and-cpu-load
+    cmd = "hostname -I | cut -d' ' -f1"
+    IP = subprocess.check_output(cmd, shell=True).decode("utf-8")
+    cmd = 'iw wlan0 station dump | grep \'[^ ]signal avg:.*\''   
+    try:
+        SS = subprocess.check_output(cmd, shell=True).decode("utf-8")
+    except:
+        SS = "No signal"
+    draw.text((x, top + 0), "IP: " + IP, font=font, fill=255)
+    draw.text((x, top + 8), SS, font=font, fill=255)
+    draw.text((x, top + 16), str(people_cnt_total), font=font, fill=255)
+
+    # Display image.
+    disp.image(image_oled)
+    disp.show()
+        
     # Calculate framerate
     t2 = cv2.getTickCount()
     time1 = (t2-t1)/freq
@@ -248,5 +316,5 @@ while j is 1:
         break
 
 # Clean up
-#cv2.destroyAllWindows()
+cv2.destroyAllWindows()
 videostream.stop()

@@ -6,16 +6,26 @@ import sys
 import time
 from threading import Thread
 import importlib.util
+import matplotlib.pyplot as plt
+import color
 
 # Import packages for RTC
+#import busio
+#import adafruit_pcf8523
+#import board
+import subprocess
+
+from board import SCL, SDA
 import busio
-import adafruit_pcf8523
-import board
+from PIL import Image, ImageDraw, ImageFont
+import adafruit_ssd1306
+import datetime
+
 
 # Define VideoStream class to handle streaming of video from webcam in separate processing thread
 # Source - Adrian Rosebrock, PyImageSearch: https://www.pyimagesearch.com/2015/12/28/increasing-raspberry-pi-fps-with-python-and-opencv/
 class VideoStream:
-    """Camera object that controls video streaming from the Picamera"""
+    """Camera object that controls video streaming Sfrom the Picamera"""
     def __init__(self,resolution=(1280,720),framerate=30):
         # Initialize the PiCamera and the camera image stream
         self.stream = cv2.VideoCapture(0)
@@ -101,7 +111,7 @@ with open(PATH_TO_LABELS, 'r') as f:
     labels = [line.strip() for line in f.readlines()]
 
 # Path to image file
-PATH_TO_IMAGE = '/home/pi/Projects/Python/tflite/object_detection/' + image
+PATH_TO_IMAGE = '/home/pi/Projects/Python/tflite/MBus_monitor/object_detection/' + image
 print(PATH_TO_IMAGE)
 
 # Have to do a weird fix for label map if using the COCO "starter model" from
@@ -140,28 +150,70 @@ time.sleep(1)
 #rtc = adafruit_pcf8523.PCF8523(rtcI2C)
 #days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
 
+
+# Create the I2C interface.
+i2c = busio.I2C(SCL, SDA)
+
+# Create the SSD1306 OLED class.
+# The first two parameters are the pixel width and pixel height.  Change these
+# to the right size for your display!
+disp = adafruit_ssd1306.SSD1306_I2C(128, 32, i2c)
+
+# Clear display.
+disp.fill(0)
+disp.show()
+
+# Create blank image for drawing.
+# Make sure to create image with mode '1' for 1-bit color.
+width_1 = disp.width
+height_1 = disp.height
+image_1 = Image.new("1", (width_1, height_1))
+
+# Get drawing object to draw on image.
+draw = ImageDraw.Draw(image_1)
+
+# Draw a black filled box to clear the image.
+draw.rectangle((0, 0, width_1, height_1), outline=0, fill=0)
+
+# Draw some shapes.
+# First define some constants to allow easy resizing of shapes.
+padding = -2
+top = padding
+bottom = height_1 - padding
+# Move left to right keeping track of the current x position for drawing shapes.
+x = 0
+
+
+# Load default font.
+font = ImageFont.load_default()
+
 # Create window
 #cv2.namedWindow('Crowd Counting', cv2.WINDOW_NORMAL)
 cv2.namedWindow('00', cv2.WINDOW_NORMAL)
-cv2.namedWindow('01', cv2.WINDOW_NORMAL)
 cv2.namedWindow('10', cv2.WINDOW_NORMAL)
+cv2.namedWindow('01', cv2.WINDOW_NORMAL)
 cv2.namedWindow('11', cv2.WINDOW_NORMAL)
 
 j = 1
-while j is 1:
+while True:
     # i = 0
     # Start timer (for calculating frame rate)
     t1 = cv2.getTickCount()
 
     # Grab frame from video stream
-    frame1 = cv2.imread(PATH_TO_IMAGE)
+    #frame1 = cv2.imread(PATH_TO_IMAGE)
+    frame1 = videostream.read()
+    #frame1 = color.WhiteBalance(frame1, 5)
     frame = frame1.copy()
+    imH = frame.shape[0]
+    imW = frame.shape[1]
+    #print(frame.shape)
+    #frame[:,:,3] = frame[:,:,3] - 10
     
     # crop the frame into four parts 
-    frames = [frame[0:int(imH),0:int(imW/4)], frame[0:int(imH),int(imW/4):int(imW/2)], frame[0:int(imH),int(imW/2):int(imW*3/4)], frame[0:int(imH),int(imW*3/4):int(imW)]]
-    # frames = [frame[0:int(imH),0:int(imW/2)], frame[0:int(imH),int(imW/2):int(imW)]]
+    frames = [frame[0:int(imH/2),0:int(imW/2)], frame[0:int(imH/2),int(imW/2):imW], frame[int(imH/2):imH,0:int(imW/2)], frame[int(imH/2):imH,int(imW/2):imW]]
     people_cnt_total=0
-    for f_idx in range(len(frames)):
+    for f_idx in range(4):
         # Acquire frame and resize to expected shape [1xHxWx3]
         frame_rgb = cv2.cvtColor(frames[f_idx], cv2.COLOR_BGR2RGB)
         frame_resized = cv2.resize(frame_rgb, (width, height))
@@ -187,10 +239,10 @@ while j is 1:
 
                 # Get bounding box coordinates and draw box
                 # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
-                ymin = int(max(1,(boxes[i][0] * imH)))
-                xmin = int(max(1,(boxes[i][1] * imW/4)))
-                ymax = int(min(imH,(boxes[i][2] * imH)))
-                xmax = int(min(imW/4,(boxes[i][3] * imW/4)))
+                ymin = int(max(1,(boxes[i][0] * imH/2)))
+                xmin = int(max(1,(boxes[i][1] * imW/2)))
+                ymax = int(min(imH/2,(boxes[i][2] * imH/2)))
+                xmax = int(min(imW/2,(boxes[i][3] * imW/2)))
 
                 # Draw label
                 object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
@@ -222,6 +274,7 @@ while j is 1:
 
         # All the results have been drawn on the frame, so it's time to display it.
         #cv2.imshow('Crowd Counting', frames[f_idx])
+        
         cv2.imshow('00', frames[0])
         cv2.imshow('10', frames[2])
         cv2.imshow('01', frames[1])
@@ -229,6 +282,26 @@ while j is 1:
 
     # t = rtc.datetime
     # print("Number of People: %d. Photo taken at: %s %d/%d/%d %d:%02d:%02d" % (people_cnt_total, days[t.tm_wday], t.tm_mday, t.tm_mon, t.tm_year, t.tm_hour, t.tm_min, t.tm_sec))
+    draw.rectangle((0, 0, width_1, height_1), outline=0, fill=0)
+
+    # Shell scripts for system monitoring from here:
+    # https://unix.stackexchange.com/questions/119126/command-to-display-memory-usage-disk-usage-and-cpu-load
+    cmd = "hostname -I | cut -d' ' -f1"
+    IP = subprocess.check_output(cmd, shell=True).decode("utf-8")
+    cmd = 'iw wlan0 station dump | grep \'[^ ]signal avg:.*\''   
+    try:
+        SS = subprocess.check_output(cmd, shell=True).decode("utf-8")
+    except:
+        SS = "No signal" 
+
+    # Write four lines of text.
+    draw.text((x, top + 0), "IP: " + IP, font=font, fill=255)
+    draw.text((x, top + 8), SS, font=font, fill=255)
+    draw.text((x, top + 16), "#People: " + str(people_cnt_total), font=font, fill=255)
+
+    # Display image.
+    disp.image(image_1)
+    disp.show()
     
     # Calculate framerate
     t2 = cv2.getTickCount()
