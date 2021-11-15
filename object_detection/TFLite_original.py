@@ -165,7 +165,7 @@ videostream = VideoStream(resolution=(imW,imH),framerate=30).start()
 time.sleep(1)
 
 # Create window
-cv2.namedWindow('Object detector', cv2.WINDOW_NORMAL)
+#cv2.namedWindow('Object detector', cv2.WINDOW_NORMAL)
 
 #for frame1 in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True):
 while True:
@@ -234,7 +234,7 @@ while True:
     cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
     # All the results have been drawn on the frame, so it's time to display it.
-    cv2.imshow('Object detector', frame)
+    #cv2.imshow('Object detector', frame)
 
     # Calculate framerate
     t2 = cv2.getTickCount()
@@ -246,5 +246,5 @@ while True:
         break
 
 # Clean up
-cv2.destroyAllWindows()
+#cv2.destroyAllWindows()
 videostream.stop()

@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 import color
 
 # Import packages for RTC
-import busio
-import adafruit_pcf8523
-import board
+#import busio
+#import adafruit_pcf8523
+#import board
 
 # Define VideoStream class to handle streaming of video from webcam in separate processing thread
 # Source - Adrian Rosebrock, PyImageSearch: https://www.pyimagesearch.com/2015/12/28/increasing-raspberry-pi-fps-with-python-and-opencv/
@@ -144,10 +144,10 @@ time.sleep(1)
 
 # Create window
 #cv2.namedWindow('Crowd Counting', cv2.WINDOW_NORMAL)
-cv2.namedWindow('00', cv2.WINDOW_NORMAL)
-cv2.namedWindow('10', cv2.WINDOW_NORMAL)
-cv2.namedWindow('01', cv2.WINDOW_NORMAL)
-cv2.namedWindow('11', cv2.WINDOW_NORMAL)
+#cv2.namedWindow('00', cv2.WINDOW_NORMAL)
+#cv2.namedWindow('10', cv2.WINDOW_NORMAL)
+#cv2.namedWindow('01', cv2.WINDOW_NORMAL)
+#cv2.namedWindow('11', cv2.WINDOW_NORMAL)
 
 j = 1
 while j is 1:
@@ -228,10 +228,11 @@ while j is 1:
 
         # All the results have been drawn on the frame, so it's time to display it.
         #cv2.imshow('Crowd Counting', frames[f_idx])
-        cv2.imshow('00', frames[0])
-        cv2.imshow('10', frames[2])
-        cv2.imshow('01', frames[1])
-        cv2.imshow('11', frames[3])
+        
+        #cv2.imshow('00', frames[0])
+        #cv2.imshow('10', frames[2])
+        #cv2.imshow('01', frames[1])
+        #cv2.imshow('11', frames[3])
 
     # t = rtc.datetime
     # print("Number of People: %d. Photo taken at: %s %d/%d/%d %d:%02d:%02d" % (people_cnt_total, days[t.tm_wday], t.tm_mday, t.tm_mon, t.tm_year, t.tm_hour, t.tm_min, t.tm_sec))
@@ -247,5 +248,5 @@ while j is 1:
         break
 
 # Clean up
-cv2.destroyAllWindows()
+#cv2.destroyAllWindows()
 videostream.stop()
