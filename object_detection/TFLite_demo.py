@@ -9,12 +9,7 @@ import importlib.util
 import matplotlib.pyplot as plt
 import color
 
-# Import packages for RTC
-#import busio
-#import adafruit_pcf8523
-#import board
 import subprocess
-
 from board import SCL, SDA
 import busio
 from PIL import Image, ImageDraw, ImageFont
