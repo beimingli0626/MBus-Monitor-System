@@ -42,7 +42,7 @@ def Count(interpreter: Interpreter, labels: list) -> int:
     width = input_details[0]['shape'][2] # 300 for ssd model
 
     # Take a test picture and save it to a fixed space, automatically close the camera after the images are took
-    PATH_TO_IMAGE = "/home/pi/MBus_monitor/object_detection/test.jpeg"
+    PATH_TO_IMAGE = "/home/pi/Projects/MBus_monitor/object_detection/test.jpeg"
     imW, imH = 1280, 720
     with picamera.PiCamera() as camera:
         camera.resolution = (imW, imH)
