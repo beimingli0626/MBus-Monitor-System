@@ -11,7 +11,7 @@ GRAPH_NAME = "detect.tflite"
 LABELMAP_NAME = "labelmap.txt"
 
 # Get path to current working directory
-CWD_PATH = os.getcwd()
+CWD_PATH = "/home/pi/Projects/MBus_monitor/object_detection"
 
 # Path to .tflite file, which contains the model that is used for object detection
 PATH_TO_CKPT = os.path.join(CWD_PATH,MODEL_NAME,GRAPH_NAME)
@@ -33,9 +33,10 @@ interpreter = Interpreter(model_path=PATH_TO_CKPT)
 # TensorFlow Lite preplans tensor allocations to optimize inference
 interpreter.allocate_tensors()
 
-
+# Para: Initialized TFLite Interpreter, all the available labels
+# Func: Take image, count the number of people and return
 def Count(interpreter: Interpreter, labels: list) -> int:
-    # Get model details
+    # Get model details, not passed through parameter to save the stack operations
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
     height = input_details[0]['shape'][1] # 300 for ssd model
@@ -55,7 +56,7 @@ def Count(interpreter: Interpreter, labels: list) -> int:
     # Start crowd counting, iterate through four crops
     people_cnt_total=0
     for f_idx in range(4):
-        # Acquire frame and resize to expected shape [1xHxWx3]
+        # Acquire frame and resize to expected shape [1x300x300x3], which is specified by ssd_mobilenet
         frame_rgb = cv2.cvtColor(frames[f_idx], cv2.COLOR_BGR2RGB)
         frame_resized = cv2.resize(frame_rgb, (width, height))
         input_data = np.expand_dims(frame_resized, axis=0)
@@ -72,17 +73,14 @@ def Count(interpreter: Interpreter, labels: list) -> int:
         # Loop over all detections and draw detection box if confidence is above minimum threshold
         for i in range(len(scores)):
             if ((scores[i] >= 0.48) and (scores[i] <= 1.0)):
-
-                # Get bounding box coordinates and draw box
-                # Interpreter can return coordinates that are outside of image dimensions, need to force them to be within image using max() and min()
-                ymin = int(max(1,(boxes[i][0] * imH/2)))
-                xmin = int(max(1,(boxes[i][1] * imW/2)))
-                ymax = int(min(imH/2,(boxes[i][2] * imH/2)))
-                xmax = int(min(imW/2,(boxes[i][3] * imW/2)))
-
                 # Draw label
                 object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
                 if object_name == 'person':
+                    # Get bounding box coordinates and draw box
+                    ymin = int(max(1,(boxes[i][0] * imH/2)))
+                    xmin = int(max(1,(boxes[i][1] * imW/2)))
+                    ymax = int(min(imH/2,(boxes[i][2] * imH/2)))
+                    xmax = int(min(imW/2,(boxes[i][3] * imW/2)))
                     cv2.rectangle(frames[f_idx], (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
                     label = '%s: %d%%' % (object_name, int(scores[i]*100)) # Example: 'person: 72%'
                     labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
