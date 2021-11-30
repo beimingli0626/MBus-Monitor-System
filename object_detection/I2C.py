@@ -8,24 +8,46 @@ import picamera #capture image
 from tflite_runtime.interpreter import Interpreter #tensorflow lite interpreter
 from count import Count
 #from object_detection import Count
+# import dweepy
 
 # Func: a call back function triggerred whenever i2c message coming in
 def i2c(id, tick):
     global pi
     global interpreter
     global labels
+    global LOG_SAVE
+    global WIFI_UPLOAD
+    global count
 
     s, b, d = pi.bsc_i2c(I2C_ADDR)
     if b:
         if d.decode('utf-8') == "count\n":
             print('working')
             count = Count(interpreter, labels)
-            print(count)
+            print("count: " + str(count))
             pi.bsc_i2c(I2C_ADDR, str(count).zfill(2))
         elif d.decode('utf-8') == "down\n":
             print('shutting down')
             time.sleep(2)
             os.system('shutdown -h now')
+        elif d.decode('utf-8') == "ack\n":
+            print('GSM uploaded successfully')
+        elif d.decode('utf-8') == "nack\n":
+            print('No GSM signal')
+            LOG_SAVE = 1
+        elif d.decode('utf-8') == "upload\n":
+            print('upload data to url')
+            WIFI_UPLOAD = 1
+        elif d[0:2].decode('utf-8') == "20":
+            if LOG_SAVE == 1:
+                with open("/home/pi/time.log", "a") as f:
+                    f.write(d.decode('utf-8'))
+                    f.write("\n")
+                LOG_SAVE = 0
+            elif WIFI_UPLOAD == 1:
+                print(d.decode('utf-8'))
+                WIFI_UPLOAD = 0
+
 
 
 ''' Initialize TFLite Interpreter '''
@@ -47,6 +69,11 @@ interpreter = Interpreter(model_path=PATH_TO_CKPT)
 # TensorFlow Lite preplans tensor allocations to optimize inference
 interpreter.allocate_tensors()
 
+# Flags
+LOG_SAVE = 0
+WIFI_UPLOAD = 0
+
+count = 0
 
 ''' Initialize Raspberry Pi as a I2C slave '''
 SDA=18
