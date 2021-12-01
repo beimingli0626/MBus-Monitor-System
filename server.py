@@ -60,9 +60,13 @@ def parse(raw_dweet):
     
 def wait_for_messages():
     logging.info("Listening for Dweets")
-    for dweet in dweepy.listen_for_dweets_from('gsm_mod'):
-        logging.info("Got Dweet")
-        parse(dweet)
+    while True:
+        try:
+            for dweet in dweepy.listen_for_dweets_from('gsm_mod'):
+                logging.info("Got Dweet")
+                parse(dweet)
+        except:
+            logging.error("Connection to Dweet server timed out")
         
 def signal_handler(sig, frame):
     print("ending...")
