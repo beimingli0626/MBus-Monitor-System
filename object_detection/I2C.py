@@ -8,7 +8,7 @@ import picamera #capture image
 from tflite_runtime.interpreter import Interpreter #tensorflow lite interpreter
 from count import Count
 #from object_detection import Count
-# import dweepy
+import dweepy
 
 # Func: a call back function triggerred whenever i2c message coming in
 def i2c(id, tick):
@@ -45,7 +45,10 @@ def i2c(id, tick):
                     f.write("\n")
                 LOG_SAVE = 0
             elif WIFI_UPLOAD == 1:
-                print(d.decode('utf-8'))
+                timeStamp = d.decode('utf-8')
+                dweet = {'count':count, 'time':timeStamp}
+                ret = dweepy.dweet_for('gsm_mod', dweet)
+                print(ret)
                 WIFI_UPLOAD = 0
 
 
