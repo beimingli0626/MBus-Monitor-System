@@ -17,6 +17,7 @@ def i2c(id, tick):
     global LOG_SAVE
     global WIFI_UPLOAD
     global count
+    global DEVICE_ID
 
     s, b, d = pi.bsc_i2c(I2C_ADDR)
     if b:
@@ -40,7 +41,7 @@ def i2c(id, tick):
                 LOG_SAVE = 0
             elif WIFI_UPLOAD == 1:
                 timeStamp = d.decode('utf-8')
-                dweet = {'count':count, 'time':timeStamp}
+                dweet = {'time':timeStamp, 'count':count, 'id':DEVICE_ID}
                 ret = dweepy.dweet_for('gsm_mod', dweet)
                 WIFI_UPLOAD = 0
 
@@ -73,6 +74,7 @@ WIFI_UPLOAD = 0
 count = 0
 
 ''' Initialize Raspberry Pi as a I2C slave '''
+DEVICE_ID = 1
 SDA=18
 SCL=19
 I2C_ADDR=9

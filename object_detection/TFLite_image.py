@@ -112,7 +112,7 @@ with open(PATH_TO_LABELS, 'r') as f:
     labels = [line.strip() for line in f.readlines()]
 
 # Path to image file
-PATH_TO_IMAGE = '/home/pi/Projects/Python/tflite/MBus_monitor/object_detection/' + image
+PATH_TO_IMAGE = '/home/pi/Projects/MBus_monitor/' + image
 print(PATH_TO_IMAGE)
 
 # Have to do a weird fix for label map if using the COCO "starter model" from
