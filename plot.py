@@ -48,7 +48,7 @@ def plot(devid, times, counts):
 
 
     #plt.savefig(devid+".png")
-    fig.savefig(devid+".png", dpi=100)
+    fig.savefig("imgs/"+devid+".png", dpi=100)
     
     #plt.show()
     
