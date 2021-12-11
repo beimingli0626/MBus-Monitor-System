@@ -4,6 +4,7 @@ import dweepy
 import logging
 import signal
 import sys
+import plot
 
 def create_table():
     with closing(sqlite3.connect("mbus.db")) as connection:
@@ -29,6 +30,10 @@ def insert_data_db(dev_id, count, time):
             cursor.execute("INSERT INTO people VALUES (?, ?, ?)", (dev_id, time, count))
         connection.commit()
     logging.info("Added data successfully")
+    f = open("number.html", "w")
+    f.write("<html><meta http-equiv='refresh' content='10'><body style='color:blue;font-size:136px;font-family: Arial, Helvetica, sans-serif;'><center>Number of people: "+str(count)+" @" + time + "</center></body></html>")
+    f.close()
+    plot.create_plots()
     
 def parse(raw_dweet):
     if ('content' not in raw_dweet.keys()):
