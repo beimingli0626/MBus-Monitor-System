@@ -1,0 +1,1 @@
+Configuration file for Raspberry Pi Zero W 2.

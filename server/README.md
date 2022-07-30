@@ -1,0 +1,1 @@
+A simplified version of data server, which automatically parses and stores the data received from multiple distributed devices and visualize on a simple webpage.
